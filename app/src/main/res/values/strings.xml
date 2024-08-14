@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">SDS</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="changesText">Changes Detected. Please Stand By.</string>
+    <string name="please_identify_txt">Please Enter Identifier Code</string>
+    <string name="example_txt">E.g. AYNDP</string>
+    <string name="identify_btn">Identify</string>
+    <string name="download_btn">Download</string>
+
+    <string name="temporaryTxt">This is just temporary</string>
+
+    <!--Universal-->
+    <string name="ok">OK</string>
+    <string name="error">Error!</string>
+    <string name="cannotIdentify">Cannot Identify Code! \n Please contact support</string>
+    <string name="downloading">Downloading file…\nPlease wait.</string>
+    <string name="initializing">Initializing…\nPlease wait</string>
+    <string name="someDataMissing">Some data is missing! \n Please contact support.</string>
+    <string name="noInternet">No Internet Connection! \n Please make sure your device is connected to the internet</string>
+    <string name="dataWrong">Missing some information. Please contact support</string>
+    <string name="singleImage">Single-Image</string>
+    <string name="justVideo">Video Advert</string>
+    <string name="justImage">Image Advert</string>
+    <string name="enter_password">Enter password</string>
+    <string name="pleaseWait">Please Wait…</string>
+    <string name="progressText">INITIALIZING…</string>
+    <string name="itemDownloadIndicator">0/%1$s </string>
+</resources>

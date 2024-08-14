@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SliderView">
+        <attr name="sliderIndicatorAnimationType" format="enum">
+            <enum name="drop" value="0"/>
+            <enum name="fill" value="1"/>
+            <enum name="swap" value="2"/>
+            <enum name="worm" value="3"/>
+            <enum name="scale" value="4"/>
+            <enum name="thin_worm" value="5"/>
+            <enum name="color" value="6"/>
+        </attr>
+        <!-- Other attributes if needed -->
+    </declare-styleable>
+</resources>

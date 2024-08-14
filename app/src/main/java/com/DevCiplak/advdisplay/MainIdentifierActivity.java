@@ -46,19 +46,24 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainIdentifierActivity extends AppCompatActivity {
-    Context mContext;
+    private static final String PREF_NAME = "advForward";
+    private static final String KEY_CODES = "codes";
+    private static final String KEY_DEVICE_ID = "deviceId";
+    private static final String KEY_MENU_TYPE = "menuType";
     private static final int MY_PERMISSIONS_REQUEST_READ_PHONE_STATE = 0;
+    private static final int PERMISSION_STORAGE_CODE = 1000;
+
+    Context mContext;
     EditText editIdentify;
     Button IdentifyAction, okBtn;
     TextView deviceID, errorTitle;
     String coders, macAddress, deviceUID, identifierCode, getUID, menuType, menuTypeIdentify, identifierUID;
-    SharedPreferences dataForward;
     ConstraintLayout loadingBackground, messageBox;
     ProgressBar progressBar;
     GetMenuTypeInfoInterface getMenuTypeInfoInterface;
     ContentInfoInterface contentInfoInterface;
-    private static final int PERMISSION_STORAGE_CODE = 1000;
     Handler handler = new Handler(Looper.getMainLooper());
+
     @SuppressLint({"HardwareIds", "SetTextI18n"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,31 +75,16 @@ public class MainIdentifierActivity extends AppCompatActivity {
                 "MyApp::MyWakelockTag");
         wakeLock.acquire();
         setContentView(R.layout.activity_main_identifier);
-        SharedPreferences redirect = getSharedPreferences("advForward", MODE_PRIVATE);
-        identifierCode = redirect.getString("codes", identifierCode);
-        identifierUID = redirect.getString("deviceId", identifierUID);
-        menuTypeIdentify = redirect.getString("menuType", menuTypeIdentify);
-        if (identifierCode != null) {
-            if (menuTypeIdentify != null) {
-                switch (menuTypeIdentify) {
-                    case "1":
-                        Intent openMenuSlider = new Intent(MainIdentifierActivity.this, MenuSliderActivity.class);
-                        startActivity(openMenuSlider);
-                        break;
-                    case "4":
-                        Intent openVideoPlayer = new Intent(MainIdentifierActivity.this, VideoPlayerActivity.class);
-                        startActivity(openVideoPlayer);
-                        break;
-                    case "0":
-                        Intent openMain = new Intent(MainIdentifierActivity.this, WebViewActivity.class);
-                        startActivity(openMain);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+
+        initializeViews();
+        setupInitialState();
+        checkStoragePermission();
+        setupDeviceIdentifier();
+
+        IdentifyAction.setOnClickListener(v -> getMenuType());
+    }
+
+    private void initializeViews() {
         progressBar = findViewById(R.id.progressBar);
         messageBox = findViewById(R.id.messageBox);
         loadingBackground = findViewById(R.id.loadingBackground);
@@ -102,64 +92,74 @@ public class MainIdentifierActivity extends AppCompatActivity {
         okBtn = findViewById(R.id.okBtn);
         editIdentify = findViewById(R.id.editIdentify);
         deviceID = findViewById(R.id.deviceID);
+        IdentifyAction = findViewById(R.id.IdentifyAction);
+    }
+
+    private void setupInitialState() {
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         loadingBackground.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
         messageBox.setVisibility(View.GONE);
         editIdentify.setImeOptions(EditorInfo.IME_ACTION_DONE);
-//        checkPermission();
-        checkStoragePermission();
+
+        SharedPreferences redirect = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        identifierCode = redirect.getString(KEY_CODES, null);
+        identifierUID = redirect.getString(KEY_DEVICE_ID, null);
+        menuTypeIdentify = redirect.getString(KEY_MENU_TYPE, null);
+
+        if (identifierCode != null && menuTypeIdentify != null) {
+            startActivityBasedOnMenuType(menuTypeIdentify);
+        }
+    }
+
+    private void setupDeviceIdentifier() {
         WifiManager wifiMan = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         WifiInfo wifiInf = wifiMan.getConnectionInfo();
         macAddress = wifiInf.getMacAddress();
-        deviceUID = "" + android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+        deviceUID = android.provider.Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
         UUID deviceUuid = new UUID(deviceUID.hashCode(), macAddress.hashCode());
-        getUID = String.valueOf(deviceUuid);
-//        deviceID.setText("Device ID: " + deviceUuid);
-        IdentifyAction = findViewById(R.id.IdentifyAction);
-        IdentifyAction.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getMenuType();
-            }
-        });
+        getUID = deviceUuid.toString();
     }
-    private void checkPermission() {
-        if (ContextCompat.checkSelfPermission(MainIdentifierActivity.this,
-                Manifest.permission.READ_PHONE_STATE)
-                != PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(MainIdentifierActivity.this,
-                    Manifest.permission.READ_PHONE_STATE)) {
-            } else {
-                ActivityCompat.requestPermissions(MainIdentifierActivity.this,
-                        new String[]{Manifest.permission.READ_PHONE_STATE},
-                        MY_PERMISSIONS_REQUEST_READ_PHONE_STATE);
-            }
+
+    private void startActivityBasedOnMenuType(String menuType) {
+        Intent intent;
+        switch (menuType) {
+            case "1":
+                intent = new Intent(this, MenuSliderActivity.class);
+                break;
+            case "4":
+                intent = new Intent(this, VideoPlayerActivity.class);
+                break;
+            case "0":
+                intent = new Intent(this, WebViewActivity.class);
+                break;
+            default:
+                return;
         }
+        startActivity(intent);
     }
-    private void checkStoragePermission(){
-        if (ContextCompat.checkSelfPermission(MainIdentifierActivity.this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
+
+    private void checkStoragePermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted
-            // You can directly request the permission.
-            ActivityCompat.requestPermissions(MainIdentifierActivity.this,
+            ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     PERMISSION_STORAGE_CODE);
         }
     }
+
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_STORAGE_CODE) {
-            if (grantResults.length > 0
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 showToast("Storage Access Permission Granted!");
             } else {
                 showToast("Storage Access Permission Denied!");
             }
         }
     }
+
     public void getMenuType() {
         Log.d("getMenuFunc", "activated");
         loadingBackground.setVisibility(View.VISIBLE);
@@ -169,164 +169,134 @@ public class MainIdentifierActivity extends AppCompatActivity {
         getMenuTypeInfoInterface.getMenuType(Constant.GET_MENU + "u=" + getUID + "&" + "c=" + coders).enqueue(new Callback<GetMenuTypeResponse>() {
             @Override
             public void onResponse(Call<GetMenuTypeResponse> call, Response<GetMenuTypeResponse> response) {
-                GetMenuTypeResponse getMenuResp = response.body();
-                if (response.isSuccessful()){
-                    Log.d("getMenuFunc", "respSuccess");
-                    if (getMenuResp != null){
-                        Log.d("getMenuFunc", "respoNoNull");
-                        if(getMenuResp.getStatus().equals(true)){
-                            Log.d("getMenuFunc", "respTrue");
-                            menuType = getMenuResp.getIs_menu();
-                            loadingBackground.setVisibility(View.GONE);
-                            progressBar.setVisibility(View.GONE);
-                            messageBox.setVisibility(View.GONE);
-                            errorTitle.setText(R.string.error);
-                            Log.d("getMenuFunc", menuType);
-                            if(menuType.equals("1")) {
-                                getTemplateId();
-                                Log.d("getMenuFunc", "type 1");
-                            } else if (menuType.equals("0")) {
-                                Log.d("getMenuFunc", "type 2");
-                                editIdentify.setText("");
-                                dataForward = getSharedPreferences("advForward", MODE_PRIVATE);
-                                SharedPreferences.Editor keyCode = dataForward.edit();
-                                keyCode.putString("codes", coders);
-                                keyCode.putString("deviceId", String.valueOf(getUID));
-                                keyCode.putString("menuType", String.valueOf(menuType));
-                                keyCode.apply();
-                                Intent openMainActivity = new Intent(MainIdentifierActivity.this, WebViewActivity.class);
-                                startActivity(openMainActivity);
-                            }
-                        } else {
-                            progressBar.setVisibility(View.GONE);
-                            messageBox.setVisibility(View.VISIBLE);
-                            errorTitle.setText(getMenuResp.getMessage());
-                            okBtn.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    loadingBackground.setVisibility(View.GONE);
-                                    messageBox.setVisibility(View.GONE);
-                                    progressBar.setVisibility(View.GONE);
-                                    errorTitle.setText(R.string.error);
-                                }
-                            });
-                        }
-                    } else {
-                        progressBar.setVisibility(View.GONE);
-                        messageBox.setVisibility(View.VISIBLE);
-                        errorTitle.setText("Some data is missing! \n Please contact support.");
-                        okBtn.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                loadingBackground.setVisibility(View.GONE);
-                                messageBox.setVisibility(View.GONE);
-                                progressBar.setVisibility(View.GONE);
-                                errorTitle.setText(R.string.error);
-                            }
-                        });
-                    }
-                }
+                handleMenuTypeResponse(response);
             }
+
             @Override
             public void onFailure(Call<GetMenuTypeResponse> call, Throwable t) {
-                progressBar.setVisibility(View.GONE);
-                messageBox.setVisibility(View.VISIBLE);
-                errorTitle.setText("No Internet Connection! \n Please make sure your device is connected to the internet");
-                okBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        loadingBackground.setVisibility(View.GONE);
-                        messageBox.setVisibility(View.GONE);
-                        progressBar.setVisibility(View.GONE);
-                        errorTitle.setText(R.string.error);
-                    }
-                });
+                handleApiError("No Internet Connection! \n Please make sure your device is connected to the internet");
             }
         });
     }
+
+    private void handleMenuTypeResponse(Response<GetMenuTypeResponse> response) {
+        GetMenuTypeResponse getMenuResp = response.body();
+        if (response.isSuccessful() && getMenuResp != null) {
+            if (getMenuResp.getStatus().equals(true)) {
+                menuType = getMenuResp.getIs_menu();
+                loadingBackground.setVisibility(View.GONE);
+                progressBar.setVisibility(View.GONE);
+                messageBox.setVisibility(View.GONE);
+                errorTitle.setText(R.string.error);
+                Log.d("getMenuFunc", menuType);
+                if (menuType.equals("1")) {
+                    getTemplateId();
+                } else if (menuType.equals("0")) {
+                    handleWebViewRedirect();
+                }
+            } else {
+                handleApiError(getMenuResp.getMessage());
+            }
+        } else {
+            handleApiError("Some data is missing! \n Please contact support.");
+        }
+    }
+
+    private void handleWebViewRedirect() {
+        editIdentify.setText("");
+        savePreferences(coders, getUID, menuType);
+        Intent openMainActivity = new Intent(this, WebViewActivity.class);
+        startActivity(openMainActivity);
+    }
+
+    private void handleApiError(String errorMessage) {
+        progressBar.setVisibility(View.GONE);
+        messageBox.setVisibility(View.VISIBLE);
+        errorTitle.setText(errorMessage);
+        okBtn.setOnClickListener(v -> {
+            loadingBackground.setVisibility(View.GONE);
+            messageBox.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
+            errorTitle.setText(R.string.error);
+        });
+    }
+
     public void getTemplateId() {
         contentInfoInterface = APIClient.getClient().create(ContentInfoInterface.class);
         contentInfoInterface.getContentInfo(Constant.GET_CONTENT + "u=" + getUID + "&c=" + coders).enqueue(new Callback<ContentInfoResponse>() {
             @Override
             public void onResponse(Call<ContentInfoResponse> call, Response<ContentInfoResponse> response) {
-                ContentInfoResponse contentInfoData = response.body();
-                if (contentInfoData != null) {
-                    if (contentInfoData.getStatus().equals(true)) {
-
-                        PageDetail[] pageDetail = contentInfoData.getPage_detail();
-
-                        for (PageDetail detail : pageDetail) {
-                            String templateID = detail.getTemplate_id();
-                            if (templateID.equals("4")) {
-                                editIdentify.setText("");
-                                dataForward = getSharedPreferences("advForward", MODE_PRIVATE);
-                                SharedPreferences.Editor keyCode = dataForward.edit();
-                                keyCode.putString("codes", coders);
-                                keyCode.putString("deviceId", String.valueOf(getUID));
-                                keyCode.putString("menuType", "4");
-                                keyCode.apply();
-                                createFolder(coders);
-                                handler.postDelayed(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Intent openMenuSlidActivity = new Intent(MainIdentifierActivity.this, VideoPlayerActivity.class);
-                                        startActivity(openMenuSlidActivity);
-                                    }
-                                }, 3000);
-                            } else {
-                                editIdentify.setText("");
-                                dataForward = getSharedPreferences("advForward", MODE_PRIVATE);
-                                SharedPreferences.Editor keyCode = dataForward.edit();
-                                keyCode.putString("codes", coders);
-                                keyCode.putString("deviceId", String.valueOf(getUID));
-                                keyCode.putString("menuType", String.valueOf(menuType));
-                                keyCode.apply();
-                                Intent openMenuSlidActivity = new Intent(MainIdentifierActivity.this, MenuSliderActivity.class);
-                                startActivity(openMenuSlidActivity);
-                            }
-                        }
-                    } else {
-                        Toast.makeText(mContext, "No Data! \n Please check internet or call support!", Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    Toast.makeText(mContext, "No Data! \n Please check internet or call support!", Toast.LENGTH_LONG).show();
-                }
+                handleContentInfoResponse(response);
             }
+
             @Override
             public void onFailure(Call<ContentInfoResponse> call, Throwable t) {
                 Toast.makeText(mContext, "No Internet Connection! \n Please check your internet connection", Toast.LENGTH_LONG).show();
             }
         });
     }
-    private void createFolder(String folderName) {
-        // Get the directory where you want to create the folder
-        File directory;
-        if (isExternalStorageWritable()) {
-            // If external storage is available and writable, create the folder in external storage
-            directory = new File(getExternalFilesDir(null), folderName);
+
+    private void handleContentInfoResponse(Response<ContentInfoResponse> response) {
+        ContentInfoResponse contentInfoData = response.body();
+        if (contentInfoData != null && contentInfoData.getStatus().equals(true)) {
+            PageDetail[] pageDetail = contentInfoData.getPage_detail();
+            for (PageDetail detail : pageDetail) {
+                String templateID = detail.getTemplate_id();
+                if (templateID.equals("4")) {
+                    handleVideoPlayerRedirect();
+                } else {
+                    handleMenuSliderRedirect();
+                }
+            }
         } else {
-            // If external storage is not available, create the folder in internal storage
-            directory = new File(getFilesDir(), folderName);
+            Toast.makeText(mContext, "No Data! \n Please check internet or call support!", Toast.LENGTH_LONG).show();
         }
-        // Create the directory if it does not exist
+    }
+
+    private void handleVideoPlayerRedirect() {
+        editIdentify.setText("");
+        savePreferences(coders, getUID, "4");
+        createFolder(coders);
+        handler.postDelayed(() -> {
+            Intent openVideoPlayerActivity = new Intent(this, VideoPlayerActivity.class);
+            startActivity(openVideoPlayerActivity);
+        }, 3000);
+    }
+
+    private void handleMenuSliderRedirect() {
+        editIdentify.setText("");
+        savePreferences(coders, getUID, menuType);
+        Intent openMenuSliderActivity = new Intent(this, MenuSliderActivity.class);
+        startActivity(openMenuSliderActivity);
+    }
+
+    private void savePreferences(String code, String deviceId, String menuType) {
+        SharedPreferences.Editor editor = getSharedPreferences(PREF_NAME, MODE_PRIVATE).edit();
+        editor.putString(KEY_CODES, code);
+        editor.putString(KEY_DEVICE_ID, deviceId);
+        editor.putString(KEY_MENU_TYPE, menuType);
+        editor.apply();
+    }
+
+    private void createFolder(String folderName) {
+        File directory = isExternalStorageWritable() ?
+                new File(getExternalFilesDir(null), folderName) :
+                new File(getFilesDir(), folderName);
+
         if (!directory.exists()) {
             boolean success = directory.mkdirs();
-            if (success) {
-                showToast("Folder created successfully!");
-            } else {
-                showToast("Failed to create folder!");
-            }
+            showToast(success ? "Folder created successfully!" : "Failed to create folder!");
         } else {
             showToast("Folder already exists!");
         }
     }
-    // Check if external storage is available and writable
+
     private boolean isExternalStorageWritable() {
         String state = Environment.getExternalStorageState();
         return Environment.MEDIA_MOUNTED.equals(state);
     }
+
     private void showToast(String message) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
-
 }

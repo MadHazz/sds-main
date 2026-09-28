@@ -3,6 +3,17 @@ plugins {
     id 'kotlin-android'
 }
 
+// Release signing is opt-in: supply a gitignored keystore.properties at the repo root.
+// Without it, release builds produce an unsigned APK (and CI/debug builds are unaffected).
+def keystorePropertiesFile = rootProject.file('keystore.properties')
+def keystoreProperties = new Properties()
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withInputStream { keystoreProperties.load(it) }
+}
+def hasReleaseSigning = keystorePropertiesFile.exists() &&
+        keystoreProperties['storeFile'] && keystoreProperties['storePassword'] &&
+        keystoreProperties['keyAlias'] && keystoreProperties['keyPassword']
+
 def configuredPin = (project.findProperty("SDS_ADMIN_PIN") ?: System.getenv("SDS_ADMIN_PIN") ?: "").toString()
 def adminPinRaw = configuredPin ?: "1234"
 def adminPinEscaped = adminPinRaw.replace("\\", "\\\\").replace("\"", "\\\"")
@@ -33,10 +44,24 @@ android {
         buildConfig = true
     }
 
+    if (hasReleaseSigning) {
+        signingConfigs {
+            release {
+                storeFile rootProject.file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            }
         }
     }
     compileOptions {

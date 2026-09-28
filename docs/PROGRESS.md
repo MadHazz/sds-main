@@ -89,8 +89,16 @@ Notes:
   - [x] Verify `./gradlew :app:validateReleaseConfiguration -PSDS_ADMIN_PIN=1234` still **fails** (guard works)
   - [x] Confirm release build requires HTTPS `SDS_BASE_URL` and a 4–12 digit PIN ≠ `1234`
   - [x] Verified end-to-end with a throwaway keystore: signed release APK produced and signature confirmed via `apksigner`
-- [ ] **Versioning:** define the `versionCode`/`versionName` bump policy; confirm the documented
-      upgrade path preserves identifier, device ID, and cached MP4s.
+- [x] **Versioning:** scheme defined in [`docs/VERSIONING.md`](VERSIONING.md) —
+      `versionName` `MAJOR.MINOR.PATCH`, `versionCode` `MAJOR*10000 + MINOR*100 + PATCH`;
+      current release set to `1.0.0` / `10000`. Bump rules and the pre-release rule documented.
+- [x] **Upgrade policy documented:** confirmed the old Java and new Kotlin clients share the
+      `advForward` preferences and `getExternalFilesDir(null)/<CODE>` media directory, and the
+      cache restores legacy `*.mp4` files when no manifest exists. Documented that an in-place
+      upgrade **requires the same signing certificate** — a changed key forces an uninstall that
+      loses identifier, device ID, and cached media.
+- [ ] **Action (yours):** identify which key signed the currently installed builds. If they are
+      debug-signed, decide whether to keep that key or plan a one-time re-identification migration.
 - [x] **Branch protection** on `main`: requires the `Quality check & debug build` check
       (strict — PR branches must be up to date with `main`), blocks force pushes and branch
       deletion. Admin bypass stays enabled, so direct pushes still work — but GitHub prints
@@ -169,6 +177,7 @@ signage hardware**, not only an emulator.
 | 6 | Only fixture-local API validated | 🔴 High | M2 |
 | 7 | No physical-device soak | 🔴 High | M3 |
 | 8 | Server-side authorization undefined | 🟡 Medium | M2 |
+| 11 | Signing key of currently installed builds unknown — a changed key breaks in-place upgrade and wipes identity/cache | 🔴 High | M1/M3 |
 | 9 | 8 advisory lint warnings (old-Android attrs, icon padding, wrapper version) | 🟢 Low | Backlog |
 | 10 | `refresh_rate` unit ambiguity in API | 🟢 Low | M2 |
 
@@ -222,3 +231,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | 2026-09-28 | **M1 in progress.** Added `.github/workflows/android.yml` (qualityCheck + assembleDebug + artifacts, Gradle caching); wired opt-in release signing via gitignored `keystore.properties` with `keystore.properties.example`; verified the release guard and a signed release APK end-to-end with a throwaway keystore. Deployment keystore, versioning policy, and branch protection still open. |
 | 2026-09-28 | **CI green.** First run failed because `setup-android@v3` installs the removed `tools` package; fixed by moving to `@v4` and installing `platforms;android-33` explicitly, and bumped checkout/setup-java/upload-artifact/setup-gradle to current majors. Run `36400390759` passed in 3m11s with all three artifacts uploaded. |
 | 2026-09-28 | **Branch protection enabled** on `main`: requires the `Quality check & debug build` check (strict), forbids force pushes and deletion. Direct pushes still allowed (admin bypass on, no PR review required). |
+| 2026-09-28 | **Versioning defined** in `docs/VERSIONING.md` (`MAJOR*10000 + MINOR*100 + PATCH`); set release to `1.0.0` / `10000`. Documented the upgrade path (shared `advForward` prefs + external-files media dir, legacy `.mp4` restore) and flagged the signing-key constraint: a changed key forces an uninstall that loses identifier, device ID, and cached media. |

@@ -31,8 +31,9 @@ android {
         applicationId = "com.DevCiplak.advdisplay"
         minSdk = 22
         targetSdk = 33
-        versionCode = 1
-        versionName = "1.0"
+        // Versioning: versionCode = MAJOR*10000 + MINOR*100 + PATCH (see docs/VERSIONING.md).
+        versionCode = 10000
+        versionName = "1.0.0"
 
         multiDexEnabled = true
         // Configure with -PSDS_ADMIN_PIN=... or SDS_ADMIN_PIN env var.

@@ -131,3 +131,31 @@ tasks.register('validateReleaseConfiguration') {
     }
 }
 tasks.matching { it.name == 'preReleaseBuild' }.configureEach { dependsOn('validateReleaseConfiguration') }
+
+// Keeps versionCode and versionName from drifting apart (see docs/VERSIONING.md).
+tasks.register('validateVersioning') {
+    group = 'verification'
+    description = 'Fails if versionCode does not match the versionName semver encoding.'
+    doLast {
+        def name = android.defaultConfig.versionName?.toString()
+        def code = android.defaultConfig.versionCode
+        def match = name =~ /^(\d+)\.(\d+)\.(\d+)$/
+        if (!match.matches()) {
+            throw new GradleException(
+                "versionName '${name}' must be MAJOR.MINOR.PATCH (for example 1.0.0) per docs/VERSIONING.md.")
+        }
+        def major = match[0][1] as int
+        def minor = match[0][2] as int
+        def patch = match[0][3] as int
+        if (minor > 99 || patch > 99) {
+            throw new GradleException(
+                "versionName '${name}': MINOR and PATCH must be 0-99 so versionCode stays derivable.")
+        }
+        def expected = major * 10000 + minor * 100 + patch
+        if (code != expected) {
+            throw new GradleException(
+                "versionCode ${code} does not match versionName '${name}' (expected ${expected} " +
+                "= MAJOR*10000 + MINOR*100 + PATCH). Update both together; see docs/VERSIONING.md.")
+        }
+    }
+}

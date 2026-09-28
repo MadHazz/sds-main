@@ -28,6 +28,6 @@ task clean(type: Delete) {
 
 tasks.register("qualityCheck") {
     group = "verification"
-    description = "Runs Kotlin compile, unit tests, and Android lint for app."
-    dependsOn(":app:compileDebugKotlin", ":app:testDebugUnitTest", ":app:lintDebug")
+    description = "Runs Kotlin compile, unit tests, Android lint, and versioning validation for app."
+    dependsOn(":app:compileDebugKotlin", ":app:testDebugUnitTest", ":app:lintDebug", ":app:validateVersioning")
 }

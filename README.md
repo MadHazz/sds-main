@@ -86,6 +86,9 @@ Validate on actual signage hardware before rollout. This work does not claim Pla
 It sets up JDK 17 and Android SDK, then runs `./gradlew qualityCheck` and `:app:assembleDebug`,
 uploading the lint report, JVM test report, and debug APK as artifacts.
 
+`qualityCheck` covers Kotlin compilation, JVM tests, Android Lint, and `:app:validateVersioning`
+(which keeps `versionCode` consistent with `versionName` — see [versioning](docs/VERSIONING.md)).
+
 ## Verification
 
 ```bash

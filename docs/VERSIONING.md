@@ -48,6 +48,18 @@ a `MAJOR` bump and must be called out in the release notes.
    targets. Equal codes install over each other, so the GA build installs over its RC.
    Never ship an RC to production; never give an RC a code above its GA build.
 
+### Enforced automatically
+
+`./gradlew :app:validateVersioning` fails the build when `versionCode` does not equal
+`MAJOR*10000 + MINOR*100 + PATCH` for the current `versionName`, when `versionName` is not
+`MAJOR.MINOR.PATCH`, or when `MINOR`/`PATCH` exceed `99`. It runs as part of `qualityCheck`,
+so CI catches drift before merge.
+
+```bash
+# Bump both values together, then confirm before committing:
+./gradlew :app:validateVersioning
+```
+
 ## Upgrade & Data Preservation
 
 An in-place upgrade (same `applicationId`, **same signing certificate**) preserves:

@@ -1,28 +1,32 @@
 <resources>
     <string name="app_name">SDS</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="changesText">Changes Detected. Please Stand By.</string>
     <string name="please_identify_txt">Please Enter Identifier Code</string>
     <string name="example_txt">E.g. AYNDP</string>
     <string name="identify_btn">Identify</string>
-    <string name="download_btn">Download</string>
-
-    <string name="temporaryTxt">This is just temporary</string>
+    <string name="share_invite_btn">Invite Another Screen</string>
 
     <!--Universal-->
     <string name="ok">OK</string>
     <string name="error">Error!</string>
     <string name="cannotIdentify">Cannot Identify Code! \n Please contact support</string>
     <string name="downloading">Downloading file…\nPlease wait.</string>
-    <string name="initializing">Initializing…\nPlease wait</string>
-    <string name="someDataMissing">Some data is missing! \n Please contact support.</string>
-    <string name="noInternet">No Internet Connection! \n Please make sure your device is connected to the internet</string>
-    <string name="dataWrong">Missing some information. Please contact support</string>
-    <string name="singleImage">Single-Image</string>
-    <string name="justVideo">Video Advert</string>
-    <string name="justImage">Image Advert</string>
     <string name="enter_password">Enter password</string>
     <string name="pleaseWait">Please Wait…</string>
-    <string name="progressText">INITIALIZING…</string>
-    <string name="itemDownloadIndicator">0/%1$s </string>
+    <string name="share_invite_chooser_title">Share setup invite</string>
+    <string name="share_invite_message">Use this identifier code to set up SDS on another screen: %1$s\n\nOpen invite link on Android: %2$s</string>
+    <string name="reconfigure_title">Change screen setup</string>
+    <string name="reconfigure_message">Enter the admin PIN to return to setup. Downloaded content remains on this device.</string>
+    <string name="continue_action">Continue</string>
+    <string name="incorrect_pin">Incorrect PIN</string>
+    <string name="retry">Retry</string>
+    <string name="video_unplayable">These videos cannot be played on this device. Check the media format with your administrator. Retrying in 30 seconds.</string>
+    <string name="web_load_error">The display could not load. Check the connection or retry. The app will retry automatically.</string>
+    <string name="web_certificate_error">The display certificate could not be verified. Contact your administrator.</string>
+    <string name="web_blocked">This page is outside the configured display server.</string>
+    <string name="display_image">Display image</string>
+    <string name="display_header">Display header image</string>
+    <string name="display_left">Left display image</string>
+    <string name="display_right">Right display image</string>
+    <string name="invalid_invite">Invalid SDS invite link.</string>
+    <string name="invite_copied">Invite copied to clipboard.</string>
 </resources>

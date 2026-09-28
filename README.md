@@ -6,6 +6,7 @@ This repository is the Android client only. The API is developed separately.
 
 - [Progress and release plan](docs/PROGRESS.md)
 - [Versioning and upgrade policy](docs/VERSIONING.md)
+- [M2 real-API integration runbook](docs/RUNBOOK_M2.md)
 - [Operator guide](docs/USER_GUIDE.md)
 - [API handoff and examples](docs/API_HANDOFF.md)
 - [Verification and device checklist](docs/VERIFICATION.md)

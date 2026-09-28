@@ -117,6 +117,10 @@ Verification performed locally on 2026-09-28: `qualityCheck` and `:app:assembleD
 
 Validates the client against the real backend described in [API_HANDOFF.md](API_HANDOFF.md).
 
+**Procedure:** follow [RUNBOOK_M2.md](RUNBOOK_M2.md) — phased curl pre-flight, per-mode
+on-device checks, error/cache-safety table, and an evidence log. Prepared; execution is
+blocked on real identifiers and API access.
+
 - [ ] Obtain **real identifiers** for each mode: web, template 2, template 3, template 4 (video).
 - [ ] Verify each mode end-to-end on-device against the production API over HTTPS:
   - [ ] Identification (`Display/GetMenuType`) → correct mode selection
@@ -232,3 +236,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | 2026-09-28 | **CI green.** First run failed because `setup-android@v3` installs the removed `tools` package; fixed by moving to `@v4` and installing `platforms;android-33` explicitly, and bumped checkout/setup-java/upload-artifact/setup-gradle to current majors. Run `36400390759` passed in 3m11s with all three artifacts uploaded. |
 | 2026-09-28 | **Branch protection enabled** on `main`: requires the `Quality check & debug build` check (strict), forbids force pushes and deletion. Direct pushes still allowed (admin bypass on, no PR review required). |
 | 2026-09-28 | **Versioning defined** in `docs/VERSIONING.md` (`MAJOR*10000 + MINOR*100 + PATCH`); set release to `1.0.0` / `10000`. Documented the upgrade path (shared `advForward` prefs + external-files media dir, legacy `.mp4` restore) and flagged the signing-key constraint: a changed key forces an uninstall that loses identifier, device ID, and cached media. |
+| 2026-09-28 | **M2 runbook prepared** (`docs/RUNBOOK_M2.md`): phased curl pre-flight for all four endpoints, per-mode on-device checks, an error/cache-safety test table, the open server-side questions (authorization, media immutability, `refresh_rate` units), an evidence log, and exit criteria. Execution blocked on real identifiers and API access. |

@@ -58,9 +58,30 @@ or when the API URL is not HTTPS. Configure the PIN in your local environment, t
 ./gradlew :app:assembleRelease
 ```
 
-Release signing is intentionally not configured with a shared key. Use your existing release
-keystore through Android Studio's signed APK flow or your deployment environment. Validate
-on actual signage hardware before rollout. This work does not claim Play Store readiness.
+### Release signing
+
+Signing is opt-in and never uses a committed key. Copy `keystore.properties.example` to
+`keystore.properties` at the repository root (gitignored) and fill in your deployment keystore:
+
+```properties
+storeFile=/absolute/path/to/release.jks
+storePassword=...
+keyAlias=...
+keyPassword=...
+```
+
+With that file present, `./gradlew :app:assembleRelease` produces a signed
+`app-release.apk`. Without it, the release build succeeds but emits an unsigned
+`app-release-unsigned.apk`, so debug builds and CI are unaffected. Keystores and
+`keystore.properties` are gitignored; never commit them.
+
+Validate on actual signage hardware before rollout. This work does not claim Play Store readiness.
+
+## Continuous Integration
+
+`.github/workflows/android.yml` runs on pushes to `main`, pull requests, and manual dispatch.
+It sets up JDK 17 and Android SDK, then runs `./gradlew qualityCheck` and `:app:assembleDebug`,
+uploading the lint report, JVM test report, and debug APK as artifacts.
 
 ## Verification
 

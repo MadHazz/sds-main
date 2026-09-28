@@ -22,7 +22,7 @@ Related docs: [README](../README.md) · [Operator guide](USER_GUIDE.md) · [API 
 | Docs | ✅ Written & committed | `README.md` + `docs/` (`1af8431`) |
 | Version control | ✅ Landed | 5 commits `7411ce7`..`1af8431` on `main` |
 | Clean-checkout build | ✅ Verified | Fresh clone of `1af8431` → `BUILD SUCCESSFUL` (50 tasks), APK produced |
-| CI | ✅ Added (first run pending) | `.github/workflows/android.yml`: `qualityCheck` + `assembleDebug` + artifacts |
+| CI | ✅ Green on GitHub | `.github/workflows/android.yml` — run `36400390759` passed; uploads APK + reports |
 | Release signing | 🟡 Wiring done, keystore pending | Opt-in via gitignored `keystore.properties`; deployment keystore not yet created |
 | Real API integration | ❌ Not done | Only local MockWebServer fixture validated |
 | Hardware validation | ❌ Not done | No physical signage device soak |
@@ -80,7 +80,9 @@ Notes:
   - [x] Run `./gradlew qualityCheck` and `:app:assembleDebug`
   - [x] Upload lint report, JVM test report, and debug APK as artifacts
   - [x] Gradle dependency caching via `gradle/actions/setup-gradle`
-  - [ ] Confirm the workflow is green on GitHub (needs the first push to run)
+  - [x] Confirm the workflow is green on GitHub — run
+        [36400390759](https://github.com/MadHazz/sds-main/actions/runs/36400390759) passed all steps
+        and uploaded `app-debug` (6.0 MB), `jvm-test-report`, and `lint-results-debug` artifacts
 - [ ] **Release signing:**
   - [ ] Generate/obtain the deployment keystore (never commit it)
   - [x] Wire signing via a gitignored `keystore.properties` (template: `keystore.properties.example`)
@@ -156,7 +158,7 @@ signage hardware**, not only an emulator.
 | 1 | ~~Completed work uncommitted on `main`~~ resolved in M0 | ✅ Done | M0 |
 | 2 | ~~`.idea/*` staged though `.gitignore` ignores them~~ resolved in M0 | ✅ Done | M0 |
 | 3 | ~~`android/FakeDependency.jar` stray artifact~~ removed in M0 | ✅ Done | M0 |
-| 4 | ~~No CI pipeline~~ workflow added; first green GitHub run pending | ✅ Done | M1 |
+| 4 | ~~No CI pipeline~~ workflow green on GitHub (run `36400390759`) | ✅ Done | M1 |
 | 5 | Release signing wired; deployment keystore still to be created | 🟡 Medium | M1/M4 |
 | 6 | Only fixture-local API validated | 🔴 High | M2 |
 | 7 | No physical-device soak | 🔴 High | M3 |
@@ -212,3 +214,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | 2026-09-28 | Created. 39 JVM + 7 instrumentation tests green; build passing; work uncommitted. Targets M0–M4 set for v1.0.0 GA on 2026-11-20. |
 | 2026-09-28 | **M0 complete.** Landed the Kotlin migration and docs in 5 commits (`7411ce7`..`1af8431`); unstaged the ignored `.idea/*` files; removed stray `android/FakeDependency.jar`; verified `qualityCheck :app:assembleDebug` from a clean clone. Push to `origin` pending. |
 | 2026-09-28 | **M1 in progress.** Added `.github/workflows/android.yml` (qualityCheck + assembleDebug + artifacts, Gradle caching); wired opt-in release signing via gitignored `keystore.properties` with `keystore.properties.example`; verified the release guard and a signed release APK end-to-end with a throwaway keystore. Deployment keystore, versioning policy, and branch protection still open. |
+| 2026-09-28 | **CI green.** First run failed because `setup-android@v3` installs the removed `tools` package; fixed by moving to `@v4` and installing `platforms;android-33` explicitly, and bumped checkout/setup-java/upload-artifact/setup-gradle to current majors. Run `36400390759` passed in 3m11s with all three artifacts uploaded. |

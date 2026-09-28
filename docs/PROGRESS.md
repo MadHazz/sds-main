@@ -142,7 +142,12 @@ blocked on real identifiers and API access.
 Maps to [VERIFICATION.md → Required Before Deployment](VERIFICATION.md). Run on the **real
 signage hardware**, not only an emulator.
 
+**Procedure:** follow [RUNBOOK_M3.md](RUNBOOK_M3.md) — device matrix, install/upgrade with the
+signing-cert check, network resilience, content mutation, video robustness, remote-control
+flows, WebView/TLS, and a 72-hour soak with sampling. Prepared; execution is blocked on hardware.
+
 - [ ] Real identifiers for web, template 2, template 3, video on actual API + devices.
+- [ ] **Determine the signing cert of the installed build** (RUNBOOK_M3 §A.0) before any upgrade.
 - [ ] Upgrade an existing installation without losing identifier/device ID or cached MP4s.
 - [ ] Offline relaunch; network loss during download; server errors; reconnection over Wi-Fi
       **and** the on-site transport (Ethernet where applicable).
@@ -237,3 +242,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | 2026-09-28 | **Branch protection enabled** on `main`: requires the `Quality check & debug build` check (strict), forbids force pushes and deletion. Direct pushes still allowed (admin bypass on, no PR review required). |
 | 2026-09-28 | **Versioning defined** in `docs/VERSIONING.md` (`MAJOR*10000 + MINOR*100 + PATCH`); set release to `1.0.0` / `10000`. Documented the upgrade path (shared `advForward` prefs + external-files media dir, legacy `.mp4` restore) and flagged the signing-key constraint: a changed key forces an uninstall that loses identifier, device ID, and cached media. |
 | 2026-09-28 | **M2 runbook prepared** (`docs/RUNBOOK_M2.md`): phased curl pre-flight for all four endpoints, per-mode on-device checks, an error/cache-safety test table, the open server-side questions (authorization, media immutability, `refresh_rate` units), an evidence log, and exit criteria. Execution blocked on real identifiers and API access. |
+| 2026-09-28 | **M3 runbook prepared** (`docs/RUNBOOK_M3.md`): device matrix, signing-cert check + in-place upgrade proof, network resilience, content mutation, video robustness, remote-control flows, WebView/TLS, and a 72-hour soak with a sampling script. Includes a reference table of the client's actual timings (300 s sync, 30 s retry, video skip/retry, keep-awake). Execution blocked on hardware. |

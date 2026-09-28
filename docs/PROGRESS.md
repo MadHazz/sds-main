@@ -13,14 +13,15 @@ Related docs: [README](../README.md) · [Operator guide](USER_GUIDE.md) · [API 
 
 | Area | State | Evidence |
 | --- | --- | --- |
-| Kotlin migration (Java → Kotlin) | ✅ Code complete, **uncommitted** | All `*.java` under `main` replaced by `*.kt`; 89 working-tree changes |
+| Kotlin migration (Java → Kotlin) | ✅ Complete & committed | All `*.java` under `main` replaced by `*.kt` (`6ef0ffc`) |
 | Build | ✅ Green | `./gradlew qualityCheck :app:assembleDebug` → `BUILD SUCCESSFUL` |
 | JVM tests | ✅ 39 passing | `app/src/test/...` (9 files) |
 | Emulator fixture tests | ✅ 7 passing (API 35) | `PlayerFlowTest.kt` + `ExampleInstrumentedTest` |
 | Lint | ✅ 0 errors, 8 advisory warnings | `app/build/reports/lint-results-debug.html` |
 | Security hardening | ✅ Present | `SecureTransport`, `WebNavigationPolicy`, `AdminGate`, release guard |
-| Docs | ✅ Written, **uncommitted** | `README.md`, `docs/USER_GUIDE.md`, `docs/API_HANDOFF.md`, `docs/VERIFICATION.md` |
-| Version control | ⚠️ At risk | Only 2 commits (`890608a`, `6ec243a`); all recent work uncommitted on `main` |
+| Docs | ✅ Written & committed | `README.md` + `docs/` (`1af8431`) |
+| Version control | ✅ Landed | 5 commits `7411ce7`..`1af8431` on `main` |
+| Clean-checkout build | ✅ Verified | Fresh clone of `1af8431` → `BUILD SUCCESSFUL` (50 tasks), APK produced |
 | CI | ❌ Missing | No `.github/workflows` |
 | Release signing | ❌ Missing | No keystore configured (intentional, needs setup) |
 | Real API integration | ❌ Not done | Only local MockWebServer fixture validated |
@@ -35,7 +36,7 @@ Related docs: [README](../README.md) · [Operator guide](USER_GUIDE.md) · [API 
 
 | # | Milestone | Target | Exit criteria |
 | --- | --- | --- | --- |
-| **M0** | Land the migration | 2026-10-04 | All work committed in logical commits; build + tests green from a clean checkout |
+| **M0** | Land the migration | ✅ 2026-09-28 | All work committed in logical commits; build + tests green from a clean checkout |
 | **M1** | Repo & release hardening | 2026-10-11 | CI runs `qualityCheck` on push/PR; release signing + versioning strategy configured; no stray artifacts tracked |
 | **M2** | Real API integration | 2026-10-25 | Web, template 2, template 3, and video identifiers verified against the real API on-device |
 | **M3** | Hardware validation & soak | 2026-11-08 | Remote flows, network loss/reconnect, codec coverage, low storage, and long-running soak pass |
@@ -43,27 +44,32 @@ Related docs: [README](../README.md) · [Operator guide](USER_GUIDE.md) · [API 
 
 ---
 
-## M0 — Land the migration (target 2026-10-04)
+## M0 — Land the migration ✅ (completed 2026-09-28)
 
 Goal: remove the risk of losing the completed Kotlin rewrite by committing it safely.
 
-- [ ] **Fix index/.gitignore contradiction.** `.gitignore` now ignores `.idea/.name`,
-      `.idea/AndroidProjectSystem.xml`, `.idea/dbnavigator.xml`, `.idea/deploymentTargetSelector.xml`,
-      `.idea/git_toolbox_blame.xml`, `.idea/material_theme_project_new.xml`,
-      `.idea/runConfigurations.xml` — yet those files are **staged as adds**. Unstage them
-      (`git restore --staged .idea`) so the ignore rules take effect.
-- [ ] **Exclude `android/FakeDependency.jar`** — 22-byte empty zip, referenced nowhere, and
-      `android/` is not ignored. Either delete it or add `android/` to `.gitignore`.
-- [ ] **Keep build caches out** — confirm `build/`, `caches/`, `daemon/`, `native/`, `wrapper/`,
-      `local.properties` stay ignored.
-- [ ] **Commit in logical chunks** (suggested order):
-  - [ ] Gradle/build config (`build.gradle`, `app/build.gradle`, wrapper, `app/lint.xml`)
-  - [ ] Kotlin source migration (`ui/`, `viewmodel/`, `data/`, `network/`, `repository/`, `security/`, `util/`, `adapter/`, `analytics/`, `constant/`, `model/`)
-  - [ ] Resources + manifests (`res/**`, `AndroidManifest.xml`, `src/debug/**`, `res/xml/**`)
-  - [ ] Tests (`src/test/**`, `src/androidTest/**`)
-  - [ ] Docs (`README.md`, `docs/**`)
-- [ ] **Verify from a clean checkout**: `git clean -xdf && ./gradlew qualityCheck :app:assembleDebug`
-- [ ] Push to `origin/main` (or a feature branch + PR for review).
+- [x] **Fix index/.gitignore contradiction** — unstaged the 7 `.idea/*` files so the ignore
+      rules take effect; `.gitignore` now also ignores `.idea/studiobot.xml`.
+- [x] **Exclude `android/FakeDependency.jar`** — deleted (22-byte empty zip, referenced nowhere).
+- [x] **Keep build caches out** — `build/`, `caches/`, `daemon/`, `native/`, `wrapper/`,
+      `local.properties` remain ignored.
+- [x] **Committed in logical chunks:**
+  - [x] `7411ce7` build — toolchain, quality gates, release safety
+  - [x] `6ef0ffc` refactor — Java → Kotlin migration
+  - [x] `c2368da` feat — layouts, themes, manifests
+  - [x] `1d32d0a` test — JVM + instrumentation coverage
+  - [x] `1af8431` docs — README, guides, handoff, verification, roadmap
+- [x] **Verified from a clean checkout** — fresh clone of `1af8431` with `local.properties`:
+      `./gradlew qualityCheck :app:assembleDebug` → `BUILD SUCCESSFUL` (50 tasks), APK produced.
+- [ ] **Push to `origin`** — 5 commits ahead of `origin/main`. Pending decision: push to `main`
+      or open a feature branch + PR.
+
+Notes:
+
+- Three tracked `.idea/*` files (`compiler.xml`, `gradle.xml`, `misc.xml`) still carry
+  machine-local IDE state (IDE JDK 17 → 21) and are intentionally left uncommitted.
+- If the team prefers no IDE state in the repo at all, untrack the remaining `.idea/*` files
+  with `git rm -r --cached .idea` in a follow-up.
 
 ---
 
@@ -141,9 +147,9 @@ signage hardware**, not only an emulator.
 
 | # | Item | Severity | Milestone |
 | --- | --- | --- | --- |
-| 1 | Completed work uncommitted on `main` | 🔴 High | M0 |
-| 2 | `.idea/*` staged though `.gitignore` ignores them | 🟡 Medium | M0 |
-| 3 | `android/FakeDependency.jar` stray artifact | 🟡 Medium | M0 |
+| 1 | ~~Completed work uncommitted on `main`~~ resolved in M0 | ✅ Done | M0 |
+| 2 | ~~`.idea/*` staged though `.gitignore` ignores them~~ resolved in M0 | ✅ Done | M0 |
+| 3 | ~~`android/FakeDependency.jar` stray artifact~~ removed in M0 | ✅ Done | M0 |
 | 4 | No CI pipeline | 🟡 Medium | M1 |
 | 5 | No release signing configuration | 🟡 Medium | M1 |
 | 6 | Only fixture-local API validated | 🔴 High | M2 |
@@ -158,7 +164,7 @@ signage hardware**, not only an emulator.
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
-| Work lost before first commit | High | Land M0 immediately; push frequently |
+| ~~Work lost before first commit~~ mitigated | Low | M0 landed; push the 5 commits to `origin` |
 | Real API contract differs from `API_HANDOFF.md` | High | M2 early integration testing; document deviations |
 | Device codec/WebView variance on signage hardware | High | M3 broad hardware matrix; no transcode in client |
 | Cleartext/TLS misconfiguration on site | High | Enforce HTTPS; debug-only loopback allowance |
@@ -198,3 +204,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | Date | Change |
 | --- | --- |
 | 2026-09-28 | Created. 39 JVM + 7 instrumentation tests green; build passing; work uncommitted. Targets M0–M4 set for v1.0.0 GA on 2026-11-20. |
+| 2026-09-28 | **M0 complete.** Landed the Kotlin migration and docs in 5 commits (`7411ce7`..`1af8431`); unstaged the ignored `.idea/*` files; removed stray `android/FakeDependency.jar`; verified `qualityCheck :app:assembleDebug` from a clean clone. Push to `origin` pending. |

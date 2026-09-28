@@ -91,7 +91,10 @@ Notes:
   - [x] Verified end-to-end with a throwaway keystore: signed release APK produced and signature confirmed via `apksigner`
 - [ ] **Versioning:** define the `versionCode`/`versionName` bump policy; confirm the documented
       upgrade path preserves identifier, device ID, and cached MP4s.
-- [ ] **Branch protection** (optional): require CI to pass before merge to `main`.
+- [x] **Branch protection** on `main`: requires the `Quality check & debug build` check
+      (strict — PR branches must be up to date with `main`), blocks force pushes and branch
+      deletion. Admin bypass stays enabled and PR review is not required, so direct pushes
+      keep working. Tighten with `enforce_admins` + required PRs if the workflow changes.
 
 Verification performed locally on 2026-09-28: `qualityCheck` and `:app:assembleDebug` pass;
 `assembleRelease` without `keystore.properties` emits `app-release-unsigned.apk`; with a
@@ -215,3 +218,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | 2026-09-28 | **M0 complete.** Landed the Kotlin migration and docs in 5 commits (`7411ce7`..`1af8431`); unstaged the ignored `.idea/*` files; removed stray `android/FakeDependency.jar`; verified `qualityCheck :app:assembleDebug` from a clean clone. Push to `origin` pending. |
 | 2026-09-28 | **M1 in progress.** Added `.github/workflows/android.yml` (qualityCheck + assembleDebug + artifacts, Gradle caching); wired opt-in release signing via gitignored `keystore.properties` with `keystore.properties.example`; verified the release guard and a signed release APK end-to-end with a throwaway keystore. Deployment keystore, versioning policy, and branch protection still open. |
 | 2026-09-28 | **CI green.** First run failed because `setup-android@v3` installs the removed `tools` package; fixed by moving to `@v4` and installing `platforms;android-33` explicitly, and bumped checkout/setup-java/upload-artifact/setup-gradle to current majors. Run `36400390759` passed in 3m11s with all three artifacts uploaded. |
+| 2026-09-28 | **Branch protection enabled** on `main`: requires the `Quality check & debug build` check (strict), forbids force pushes and deletion. Direct pushes still allowed (admin bypass on, no PR review required). |

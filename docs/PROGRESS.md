@@ -93,8 +93,11 @@ Notes:
       upgrade path preserves identifier, device ID, and cached MP4s.
 - [x] **Branch protection** on `main`: requires the `Quality check & debug build` check
       (strict — PR branches must be up to date with `main`), blocks force pushes and branch
-      deletion. Admin bypass stays enabled and PR review is not required, so direct pushes
-      keep working. Tighten with `enforce_admins` + required PRs if the workflow changes.
+      deletion. Admin bypass stays enabled, so direct pushes still work — but GitHub prints
+      `Bypassed rule violations ... Required status check is expected` on each one. Requiring
+      PRs (or setting `enforce_admins`) would block direct pushes entirely; switch to a
+      branch-and-PR flow before tightening. Verified green afterwards: run
+      [36400938038](https://github.com/MadHazz/sds-main/actions/runs/36400938038).
 
 Verification performed locally on 2026-09-28: `qualityCheck` and `:app:assembleDebug` pass;
 `assembleRelease` without `keystore.properties` emits `app-release-unsigned.apk`; with a

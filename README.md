@@ -6,6 +6,7 @@ This repository is the Android client only. The API is developed separately.
 
 - [Progress and release plan](docs/PROGRESS.md)
 - [Versioning and upgrade policy](docs/VERSIONING.md)
+- [Release signing walkthrough](docs/SIGNING.md)
 - [M2 real-API integration runbook](docs/RUNBOOK_M2.md)
 - [M3 hardware validation & soak runbook](docs/RUNBOOK_M3.md)
 - [Operator guide](docs/USER_GUIDE.md)
@@ -77,6 +78,9 @@ With that file present, `./gradlew :app:assembleRelease` produces a signed
 `app-release.apk`. Without it, the release build succeeds but emits an unsigned
 `app-release-unsigned.apk`, so debug builds and CI are unaffected. Keystores and
 `keystore.properties` are gitignored; never commit them.
+
+Step-by-step instructions, including how to check what signed the currently installed builds
+and how to verify the result, are in [docs/SIGNING.md](docs/SIGNING.md).
 
 Validate on actual signage hardware before rollout. This work does not claim Play Store readiness.
 

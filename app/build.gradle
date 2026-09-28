@@ -14,13 +14,13 @@ def hasReleaseSigning = keystorePropertiesFile.exists() &&
         keystoreProperties['storeFile'] && keystoreProperties['storePassword'] &&
         keystoreProperties['keyAlias'] && keystoreProperties['keyPassword']
 
-def configuredPin = (project.findProperty("SDS_ADMIN_PIN") ?: System.getenv("SDS_ADMIN_PIN") ?: "").toString()
+def configuredPin = (project.findProperty("ADVDISPLAY_ADMIN_PIN") ?: System.getenv("ADVDISPLAY_ADMIN_PIN") ?: "").toString()
 def adminPinRaw = configuredPin ?: "1234"
 def adminPinEscaped = adminPinRaw.replace("\\", "\\\\").replace("\"", "\\\"")
-def apiBaseUrl = (project.findProperty("SDS_BASE_URL") ?: System.getenv("SDS_BASE_URL") ?: "https://sds.par-crm.com/").toString()
+def apiBaseUrl = (project.findProperty("ADVDISPLAY_BASE_URL") ?: System.getenv("ADVDISPLAY_BASE_URL") ?: "https://sds.par-crm.com/").toString()
 def parsedBaseUrl = new URI(apiBaseUrl)
 if (!(parsedBaseUrl.scheme in ['https', 'http']) || !parsedBaseUrl.host || parsedBaseUrl.userInfo || parsedBaseUrl.query || parsedBaseUrl.fragment) {
-    throw new GradleException('SDS_BASE_URL must be an HTTP(S) base URL without credentials, query or fragment.')
+    throw new GradleException('ADVDISPLAY_BASE_URL must be an HTTP(S) base URL without credentials, query or fragment.')
 }
 if (!apiBaseUrl.endsWith('/')) apiBaseUrl += '/'
 
@@ -28,7 +28,7 @@ android {
     compileSdk = 33
 
     defaultConfig {
-        applicationId = "com.DevCiplak.advdisplay"
+        applicationId = "com.rihlahidali.advdisplay"
         minSdk = 22
         targetSdk = 33
         // Versioning: versionCode = MAJOR*10000 + MINOR*100 + PATCH (see docs/VERSIONING.md).
@@ -36,7 +36,7 @@ android {
         versionName = "1.0.0"
 
         multiDexEnabled = true
-        // Configure with -PSDS_ADMIN_PIN=... or SDS_ADMIN_PIN env var.
+        // Configure with -PADVDISPLAY_ADMIN_PIN=... or ADVDISPLAY_ADMIN_PIN env var.
         buildConfigField "String", "ADMIN_PIN", "\"${adminPinEscaped}\""
         buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -82,7 +82,7 @@ android {
         xmlReport = true
         lintConfig = file('lint.xml')
     }
-    namespace = 'com.DevCiplak.advdisplay'
+    namespace = 'com.rihlahidali.advdisplay'
 }
 
 dependencies {
@@ -123,10 +123,10 @@ dependencies {
 tasks.register('validateReleaseConfiguration') {
     doLast {
         if (!(configuredPin ==~ /[0-9]{4,12}/) || configuredPin == '1234') {
-            throw new GradleException('Release builds require SDS_ADMIN_PIN with 4-12 digits, different from 1234.')
+            throw new GradleException('Release builds require ADVDISPLAY_ADMIN_PIN with 4-12 digits, different from 1234.')
         }
         if (parsedBaseUrl.scheme != 'https') {
-            throw new GradleException('Release builds require an HTTPS SDS_BASE_URL.')
+            throw new GradleException('Release builds require an HTTPS ADVDISPLAY_BASE_URL.')
         }
     }
 }

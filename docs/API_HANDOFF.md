@@ -2,7 +2,7 @@
 
 This documents the existing contract consumed by the Android client, not a newly implemented
 backend. Endpoint paths and JSON key casing below are significant. All API calls are GET.
-Configure the base URL with `SDS_BASE_URL` at build time; the default is `https://sds.par-crm.com/`.
+Configure the base URL with `ADVDISPLAY_BASE_URL` at build time; the default is `https://sds.par-crm.com/`.
 
 ## Identification
 

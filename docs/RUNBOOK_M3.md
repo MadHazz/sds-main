@@ -31,7 +31,7 @@ Fill this in and run the phases on each row. Behaviour varies by SoC, WebView ve
 Capture the basics per device:
 
 ```bash
-PKG=com.DevCiplak.advdisplay
+PKG=com.rihlahidali.advdisplay
 adb shell getprop ro.product.model
 adb shell getprop ro.build.version.release
 adb shell getprop ro.build.version.sdk
@@ -60,12 +60,22 @@ Sync only runs while the player is **visible**; it stops when backgrounded and r
 
 Depends on the signing-key constraint in [VERSIONING.md](VERSIONING.md#the-signing-key-is-the-linchpin).
 
+> **Renamed app.** SDS was renamed to AdvDisplay, so the `applicationId` changed from
+> `com.DevCiplak.advdisplay` to `com.rihlahidali.advdisplay`. Android treats those as
+> **different apps**: a device running the pre-rename build **cannot upgrade in place** — it
+> must be uninstalled and every screen re-identified. If a test device still has the old
+> identifier, record its certificate in A.0 before removing it.
+
 ### A.0 Determine what signed the *currently installed* build
 
 Do this **before** installing anything new, on a device with the existing app installed.
 
 ```bash
-PKG=com.DevCiplak.advdisplay
+PKG=com.rihlahidali.advdisplay
+
+# Check for the pre-rename package too, if the device predates the rename:
+adb shell pm path com.DevCiplak.advdisplay || echo "(pre-rename app not installed)"
+
 APK_PATH=$(adb shell pm path $PKG | sed 's/package://' | tr -d '\r' | head -1)
 adb pull "$APK_PATH" /tmp/installed.apk
 apksigner verify --print-certs /tmp/installed.apk
@@ -78,10 +88,12 @@ Compare with the deployment keystore:
 keytool -list -v -keystore /path/to/release.jks -alias <alias> | grep -i 'SHA256'
 ```
 
-- [ ] Digests **match** → installs upgrade in place. Proceed to A.2.
-- [ ] Digests **differ** → the install will fail with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`.
+- [ ] Digests **match** → builds under this same identifier upgrade in place. Proceed to A.2.
+- [ ] Digests **differ** → the install fails with `INSTALL_FAILED_UPDATE_INCOMPATIBLE`.
       Decide with the operator: keep the original key, or accept a one-time uninstall +
       re-identification on every device (which wipes identity and cached media).
+- [ ] Device holds the **pre-rename** identifier (`com.DevCiplak.advdisplay`) → no upgrade path;
+      uninstall and re-identify (see the note above).
 
 ### A.1 Fresh install
 
@@ -193,7 +205,7 @@ Use the **physical remote**. Keyboard remapping hides real problems.
 | E4 | Text input | Type an identifier with the remote | Readable field; leading/trailing spaces trimmed; letters upper-cased |
 | E5 | Retry (web/slideshow) | Break then fix the server, press Retry | Recovers |
 | E6 | Invite (share) | Tap **Invite Another Screen** | Share sheet, or clipboard fallback |
-| E7 | Invite (receive) | Open `sds://join?c=CODE` on a clean device | Applies the code and identifies |
+| E7 | Invite (receive) | Open `advdisplay://join?c=CODE` on a clean device | Applies the code and identifies |
 | E8 | Invite on configured screen | Open an invite link on a configured device | **Requires the admin PIN** before replacing setup |
 | E9 | Cancel a replacement invite | Dismiss the PIN dialog | Existing screen unchanged |
 
@@ -231,7 +243,7 @@ Sample memory, temperature, and free space every 30 minutes. Save this as `soak-
 ```bash
 #!/usr/bin/env bash
 # Appends a sample row every 30 min while the screen plays.
-PKG=com.DevCiplak.advdisplay
+PKG=com.rihlahidali.advdisplay
 OUT=soak.csv
 [ -f "$OUT" ] || echo "timestamp,pss_kb,thermal_c,free_kb" > "$OUT"
 while true; do
@@ -253,7 +265,7 @@ Watch for:
 - [ ] **No crashes or ANRs:**
 
 ```bash
-adb logcat -d | grep -iE 'FATAL EXCEPTION|ANR in com.DevCiplak.advdisplay'
+adb logcat -d | grep -iE 'FATAL EXCEPTION|ANR in com.rihlahidali.advdisplay'
 ```
 
 - [ ] **Screen stays awake** for the whole run:

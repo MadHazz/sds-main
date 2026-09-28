@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <lint>
-    <!-- Glide's unused NotificationTarget posts notifications; SDS itself does not. -->
+    <!-- Glide's unused NotificationTarget posts notifications; AdvDisplay itself does not. -->
     <issue id="NotificationPermission">
         <ignore regexp=".*com\.bumptech\.glide\.request\.target\.NotificationTarget.*" />
     </issue>

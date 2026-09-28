@@ -59,7 +59,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
-                    android:scheme="sds"
+                    android:scheme="advdisplay"
                     android:host="join" />
             </intent-filter>
         </activity>

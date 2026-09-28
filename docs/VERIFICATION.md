@@ -23,7 +23,7 @@ The real API and physical signage hardware were not validated in this run.
 
 `qualityCheck` runs Kotlin compilation, JVM tests, and Android Lint. Kotlin warnings fail the
 build. Lint errors fail the build; advisory warnings remain visible. The only third-party lint
-exclusion targets Glide's unused notification target; SDS does not post notifications.
+exclusion targets Glide's unused notification target; AdvDisplay does not post notifications.
 
 Reports:
 
@@ -40,7 +40,7 @@ WebView origin checks, HTTPS transport, incomplete HTTP bodies, and prompt downl
 Start a disposable Android emulator (the suite has been exercised on API 35), then run:
 
 ```bash
-./gradlew :app:connectedDebugAndroidTest -PSDS_BASE_URL=http://127.0.0.1:18080/
+./gradlew :app:connectedDebugAndroidTest -PADVDISPLAY_BASE_URL=http://127.0.0.1:18080/
 ```
 
 The tests start MockWebServer **inside the device** on port 18080, generate real PNG and H.264
@@ -74,7 +74,7 @@ Afterward, rebuild without the fixture property before distributing an APK:
 This must fail even if an environment PIN is set, because the explicit property uses the debug default:
 
 ```bash
-./gradlew :app:validateReleaseConfiguration -PSDS_ADMIN_PIN=1234
+./gradlew :app:validateReleaseConfiguration -PADVDISPLAY_ADMIN_PIN=1234
 ```
 
 Release requires an explicitly supplied numeric PIN of 4-12 digits other than `1234`, and

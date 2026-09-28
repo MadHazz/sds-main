@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SDS</string>
+    <string name="app_name">AdvDisplay</string>
     <string name="please_identify_txt">Please Enter Identifier Code</string>
     <string name="example_txt">E.g. AYNDP</string>
     <string name="identify_btn">Identify</string>
@@ -13,7 +13,7 @@
     <string name="enter_password">Enter password</string>
     <string name="pleaseWait">Please Wait…</string>
     <string name="share_invite_chooser_title">Share setup invite</string>
-    <string name="share_invite_message">Use this identifier code to set up SDS on another screen: %1$s\n\nOpen invite link on Android: %2$s</string>
+    <string name="share_invite_message">Use this identifier code to set up AdvDisplay on another screen: %1$s\n\nOpen invite link on Android: %2$s</string>
     <string name="reconfigure_title">Change screen setup</string>
     <string name="reconfigure_message">Enter the admin PIN to return to setup. Downloaded content remains on this device.</string>
     <string name="continue_action">Continue</string>
@@ -27,6 +27,6 @@
     <string name="display_header">Display header image</string>
     <string name="display_left">Left display image</string>
     <string name="display_right">Right display image</string>
-    <string name="invalid_invite">Invalid SDS invite link.</string>
+    <string name="invalid_invite">Invalid AdvDisplay invite link.</string>
     <string name="invite_copied">Invite copied to clipboard.</string>
 </resources>

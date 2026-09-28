@@ -1,4 +1,4 @@
-# SDS Android — Progress & Release Plan
+# AdvDisplay — Progress & Release Plan
 
 Living document. Update the **Status Snapshot** and task checkboxes as work lands.
 Related docs: [README](../README.md) · [Operator guide](USER_GUIDE.md) · [API handoff](API_HANDOFF.md) · [Verification](VERIFICATION.md)
@@ -27,7 +27,7 @@ Related docs: [README](../README.md) · [Operator guide](USER_GUIDE.md) · [API 
 | Real API integration | ❌ Not done | Only local MockWebServer fixture validated |
 | Hardware validation | ❌ Not done | No physical signage device soak |
 
-**Build facts:** `applicationId com.DevCiplak.advdisplay` · `versionCode 1` / `versionName "1.0"` ·
+**Build facts:** `applicationId com.rihlahidali.advdisplay` · `versionCode 10000` / `versionName "1.0.0"` ·
 `minSdk 22` · `targetSdk/compileSdk 33` · Kotlin 1.9.24 · AGP 8.12.3 · Gradle 8.13 · JDK 17.
 
 ---
@@ -86,8 +86,8 @@ Notes:
 - [ ] **Release signing:**
   - [ ] Generate/obtain the deployment keystore (never commit it)
   - [x] Wire signing via a gitignored `keystore.properties` (template: `keystore.properties.example`)
-  - [x] Verify `./gradlew :app:validateReleaseConfiguration -PSDS_ADMIN_PIN=1234` still **fails** (guard works)
-  - [x] Confirm release build requires HTTPS `SDS_BASE_URL` and a 4–12 digit PIN ≠ `1234`
+  - [x] Verify `./gradlew :app:validateReleaseConfiguration -PADVDISPLAY_ADMIN_PIN=1234` still **fails** (guard works)
+  - [x] Confirm release build requires HTTPS `ADVDISPLAY_BASE_URL` and a 4–12 digit PIN ≠ `1234`
   - [x] Verified end-to-end with a throwaway keystore: signed release APK produced and signature confirmed via `apksigner`
 - [x] **Versioning:** scheme defined in [`docs/VERSIONING.md`](VERSIONING.md) —
       `versionName` `MAJOR.MINOR.PATCH`, `versionCode` `MAJOR*10000 + MINOR*100 + PATCH`;
@@ -97,8 +97,13 @@ Notes:
       cache restores legacy `*.mp4` files when no manifest exists. Documented that an in-place
       upgrade **requires the same signing certificate** — a changed key forces an uninstall that
       loses identifier, device ID, and cached media.
+      **Updated after the SDS → AdvDisplay rename:** the `applicationId` changed, so the policy
+      now applies only to AdvDisplay → AdvDisplay upgrades. Any device on the pre-rename
+      `com.DevCiplak.advdisplay` must be uninstalled and re-identified.
 - [ ] **Action (yours):** identify which key signed the currently installed builds. If they are
       debug-signed, decide whether to keep that key or plan a one-time re-identification migration.
+- [ ] **Action (yours):** confirm whether the app has ever been deployed. If it has not, the
+      rename above is free; if it has, plan the uninstall + re-identification for those devices.
 - [x] **Branch protection** on `main`: requires the `Quality check & debug build` check
       (strict — PR branches must be up to date with `main`), blocks force pushes and branch
       deletion. Admin bypass stays enabled, so direct pushes still work — but GitHub prints
@@ -165,7 +170,7 @@ flows, WebView/TLS, and a 72-hour soak with sampling. Prepared; execution is blo
 - [ ] Sign with the **deployment keystore**.
 - [ ] Verify the final APK uses the **production HTTPS API URL** and a **non-default PIN**.
 - [ ] Confirm the shipped APK is **not** the loopback fixture build
-      (rebuild without `-PSDS_BASE_URL=http://127.0.0.1:18080/`).
+      (rebuild without `-PADVDISPLAY_BASE_URL=http://127.0.0.1:18080/`).
 - [ ] Operator documentation delivered ([USER_GUIDE.md](USER_GUIDE.md)); PIN handling agreed with the operator.
 - [ ] RC soak on production hardware for an agreed window with sign-off.
 - [ ] Tag `v1.0.0`; publish release notes + APK to the deployment channel.
@@ -212,13 +217,13 @@ flows, WebView/TLS, and a 72-hour soak with sampling. Prepared; execution is blo
 ./gradlew qualityCheck :app:assembleDebug
 
 # Emulator integration tests against the in-process fixture (destructive to the test install)
-./gradlew :app:connectedDebugAndroidTest -PSDS_BASE_URL=http://127.0.0.1:18080/
+./gradlew :app:connectedDebugAndroidTest -PADVDISPLAY_BASE_URL=http://127.0.0.1:18080/
 
 # Restore the normal API URL after the fixture run
 ./gradlew :app:assembleDebug
 
 # Release guard must fail with the debug default PIN
-./gradlew :app:validateReleaseConfiguration -PSDS_ADMIN_PIN=1234
+./gradlew :app:validateReleaseConfiguration -PADVDISPLAY_ADMIN_PIN=1234
 
 # Signed release (after M1 signing setup)
 ./gradlew :app:assembleRelease
@@ -245,3 +250,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | 2026-09-28 | **M3 runbook prepared** (`docs/RUNBOOK_M3.md`): device matrix, signing-cert check + in-place upgrade proof, network resilience, content mutation, video robustness, remote-control flows, WebView/TLS, and a 72-hour soak with a sampling script. Includes a reference table of the client's actual timings (300 s sync, 30 s retry, video skip/retry, keep-awake). Execution blocked on hardware. |
 | 2026-09-28 | **Version guard added.** `:app:validateVersioning` fails when `versionCode` does not equal `MAJOR*10000 + MINOR*100 + PATCH` for `versionName`, or when the name is malformed or MINOR/PATCH exceed 99. Wired into `qualityCheck`, so CI now catches version drift. Verified both the passing and failing cases. |
 | 2026-09-28 | **Signing walkthrough added** (`docs/SIGNING.md`): installed-build certificate discovery, keystore generation, `keystore.properties`, signed build, signature verification with a digest-comparison snippet, backup and CI guidance, and troubleshooting. Every command was executed against this repo before publication. |
+| 2026-09-28 | **Renamed SDS → AdvDisplay.** Product name, app label (`app_name`), UI/clipboard strings, docs, and the invite scheme (`sds://` → `advdisplay://`) updated. Build inputs renamed to `ADVDISPLAY_BASE_URL` / `ADVDISPLAY_ADMIN_PIN`. Package and `applicationId` changed from `com.DevCiplak.advdisplay` to `com.rihlahidali.advdisplay` (vendor `DevCiplak` → `rihlahidali`), moving all 38 sources and updating imports/tests. Verified in the built APK: `package=com.rihlahidali.advdisplay`, `application-label=AdvDisplay`, scheme `advdisplay://join`. **The API host (`sds.par-crm.com`) and repo name are unchanged pending a new host URL.** |

@@ -1,6 +1,6 @@
 # Release Signing Walkthrough
 
-How to sign SDS release builds, why the signing key matters more than it looks, and how to
+How to sign AdvDisplay release builds, why the signing key matters more than it looks, and how to
 verify the result. Every command here was executed against this repository before being
 documented.
 
@@ -36,10 +36,10 @@ So a signing key is not just a build detail; it is the identity of the app acros
 **Do this before generating anything.** It decides whether you can reuse an existing key or
 must plan a migration.
 
-On a device that already has SDS installed:
+On a device that already has AdvDisplay installed:
 
 ```bash
-PKG=com.DevCiplak.advdisplay
+PKG=com.rihlahidali.advdisplay
 
 # Pull the installed APK (path differs per Android version)
 APK_PATH=$(adb shell pm path $PKG | sed 's/package://' | tr -d '\r' | head -1)
@@ -63,7 +63,7 @@ keytool -list -v -keystore ~/.android/debug.keystore \
   | sed -n 's/.*SHA256: //p' | tr -d ':' | tr 'A-F' 'a-f'
 
 # Normalised digest of your deployment keystore (once it exists)
-keytool -list -v -keystore /path/to/release.jks -alias sds-release -storepass '<store-pass>' \
+keytool -list -v -keystore /path/to/release.jks -alias advdisplay-release -storepass '<store-pass>' \
   | sed -n 's/.*SHA256: //p' | tr -d ':' | tr 'A-F' 'a-f'
 ```
 
@@ -85,11 +85,11 @@ Run once, from a machine you control. Keep the output **outside** the repository
 
 ```bash
 keytool -genkeypair -v \
-  -keystore ~/keys/sds-release.jks \
+  -keystore ~/keys/advdisplay-release.jks \
   -storetype PKCS12 \
-  -alias sds-release \
+  -alias advdisplay-release \
   -keyalg RSA -keysize 2048 -validity 10000 \
-  -dname "CN=SDS Signage, OU=Ops, O=AdvDisplay, L=<City>, ST=<State>, C=<CC>"
+  -dname "CN=AdvDisplay Signage, OU=Ops, O=AdvDisplay, L=<City>, ST=<State>, C=<CC>"
 ```
 
 `keytool` prompts for **two** passwords: the store password and the key password. Use a long,
@@ -100,12 +100,12 @@ unique passphrase from your password manager, and record both.
 | `-storetype PKCS12` | Well-supported modern format (JDK 9+ default); explicit for determinism |
 | `-keyalg RSA -keysize 2048` | Widely accepted by Android and tooling |
 | `-validity 10000` | ~27 years. An expired key cannot sign; Android also rejects certs expiring too soon |
-| `-alias sds-release` | Stable alias; changing it can break signing configs |
+| `-alias advdisplay-release` | Stable alias; changing it can break signing configs |
 
 Verify it was created:
 
 ```bash
-keytool -list -v -keystore ~/keys/sds-release.jks -alias sds-release | grep -i 'Alias\|Valid from\|Signature algorithm'
+keytool -list -v -keystore ~/keys/advdisplay-release.jks -alias advdisplay-release | grep -i 'Alias\|Valid from\|Signature algorithm'
 ```
 
 > **Back up the keystore and both passwords now** — see [§7](#7-step-5--back-up-the-keystore).
@@ -120,9 +120,9 @@ cp keystore.properties.example keystore.properties
 ```
 
 ```properties
-storeFile=/Users/you/keys/sds-release.jks
+storeFile=/Users/you/keys/advdisplay-release.jks
 storePassword=<store-pass>
-keyAlias=sds-release
+keyAlias=advdisplay-release
 keyPassword=<key-pass>
 ```
 
@@ -142,12 +142,12 @@ git check-ignore -v keystore.properties
 
 Release builds also enforce two other guards, so supply them here as well:
 
-- `SDS_ADMIN_PIN` — 4–12 digits, **not** `1234` (the debug default)
-- `SDS_BASE_URL` — must be **HTTPS**
+- `ADVDISPLAY_ADMIN_PIN` — 4–12 digits, **not** `1234` (the debug default)
+- `ADVDISPLAY_BASE_URL` — must be **HTTPS**
 
 ```bash
-export SDS_ADMIN_PIN='<your-6-digit-pin>'
-export SDS_BASE_URL='https://sds.par-crm.com/'
+export ADVDISPLAY_ADMIN_PIN='<your-6-digit-pin>'
+export ADVDISPLAY_BASE_URL='https://sds.par-crm.com/'
 
 ./gradlew :app:assembleRelease
 ```
@@ -155,7 +155,7 @@ export SDS_BASE_URL='https://sds.par-crm.com/'
 Gradle-property form works too (properties win over environment variables):
 
 ```bash
-./gradlew :app:assembleRelease -PSDS_ADMIN_PIN=<pin> -PSDS_BASE_URL=https://sds.par-crm.com/
+./gradlew :app:assembleRelease -PADVDISPLAY_ADMIN_PIN=<pin> -PADVDISPLAY_BASE_URL=https://sds.par-crm.com/
 ```
 
 Output:
@@ -179,7 +179,7 @@ apksigner verify --print-certs "$APK" | grep -i 'DN\|SHA-256'
 Expected output (digest will be yours):
 
 ```
-Signer #1 certificate DN: CN=SDS Signage, OU=Ops, O=AdvDisplay, L=..., ST=..., C=...
+Signer #1 certificate DN: CN=AdvDisplay Signage, OU=Ops, O=AdvDisplay, L=..., ST=..., C=...
 Signer #1 certificate SHA-256 digest: 719c6c252a76e0779f48e29eb84f51d5b1b2691c6634d6c2b0dfb2109541890c
 ```
 
@@ -187,7 +187,7 @@ Then confirm it matches your keystore exactly:
 
 ```bash
 A=$(apksigner verify --print-certs "$APK" | sed -n 's/.*SHA-256 digest: //p' | tr -d ':' | tr 'A-F' 'a-f')
-K=$(keytool -list -v -keystore ~/keys/sds-release.jks -alias sds-release -storepass '<store-pass>' \
+K=$(keytool -list -v -keystore ~/keys/advdisplay-release.jks -alias advdisplay-release -storepass '<store-pass>' \
       | sed -n 's/.*SHA256: //p' | tr -d ':' | tr 'A-F' 'a-f')
 [ "$A" = "$K" ] && echo "MATCH" || echo "MISMATCH — do not ship"
 ```
@@ -228,8 +228,8 @@ version:
 
 ```bash
 # 1. Note the current state
-adb shell run-as com.DevCiplak.advdisplay cat shared_prefs/advForward.xml
-adb shell ls -l /sdcard/Android/data/com.DevCiplak.advdisplay/files/<CODE>/
+adb shell run-as com.rihlahidali.advdisplay cat shared_prefs/advForward.xml
+adb shell ls -l /sdcard/Android/data/com.rihlahidali.advdisplay/files/<CODE>/
 
 # 2. Install the new signed APK over the existing one
 adb install -r app/build/outputs/apk/release/app-release.apk
@@ -248,7 +248,7 @@ Add repository secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KE
 
 ```bash
 # One-time: encode the keystore for the secret (then delete the temp file)
-base64 -i ~/keys/sds-release.jks -o /tmp/ks.b64
+base64 -i ~/keys/advdisplay-release.jks -o /tmp/ks.b64
 # paste the contents of /tmp/ks.b64 into the KEYSTORE_BASE64 secret
 rm -f /tmp/ks.b64
 ```
@@ -271,8 +271,8 @@ Workflow step (sketch):
 
       - name: Build signed release
         env:
-          SDS_ADMIN_PIN: ${{ secrets.SDS_ADMIN_PIN }}
-          SDS_BASE_URL: ${{ secrets.SDS_BASE_URL }}
+          ADVDISPLAY_ADMIN_PIN: ${{ secrets.ADVDISPLAY_ADMIN_PIN }}
+          ADVDISPLAY_BASE_URL: ${{ secrets.ADVDISPLAY_BASE_URL }}
         run: ./gradlew :app:assembleRelease
 ```
 
@@ -296,7 +296,7 @@ git check-ignore -v keystore.properties
 git log --all --oneline -- '*.jks' '*.keystore' keystore.properties
 
 # Signed release
-SDS_ADMIN_PIN=<pin> SDS_BASE_URL=https://sds.par-crm.com/ ./gradlew :app:assembleRelease
+ADVDISPLAY_ADMIN_PIN=<pin> ADVDISPLAY_BASE_URL=https://sds.par-crm.com/ ./gradlew :app:assembleRelease
 ```
 
 ## 11. Troubleshooting
@@ -307,7 +307,7 @@ SDS_ADMIN_PIN=<pin> SDS_BASE_URL=https://sds.par-crm.com/ ./gradlew :app:assembl
 | Output is `app-release-unsigned.apk` | `keystore.properties` missing or incomplete | All four keys required; run `git check-ignore -v keystore.properties` |
 | `Keystore was tampered with, or password was incorrect` | Wrong store/key password, or PKCS12 key password differs from store | Re-enter carefully; regenerate if genuinely lost |
 | `Failed to read key <alias>` | `keyAlias` mismatch | `keytool -list -keystore <file>` to list aliases |
-| Release build fails on configuration | Missing/invalid `SDS_ADMIN_PIN` or non-HTTPS `SDS_BASE_URL` | Use a 4–12 digit PIN ≠ `1234` and an HTTPS URL |
+| Release build fails on configuration | Missing/invalid `ADVDISPLAY_ADMIN_PIN` or non-HTTPS `ADVDISPLAY_BASE_URL` | Use a 4–12 digit PIN ≠ `1234` and an HTTPS URL |
 | `apksigner: command not found` | Not on `PATH` | Use `$ANDROID_HOME/build-tools/<version>/apksigner` |
 | Digest mismatch but you expected a match | Trailing newline/whitespace, or comparing uppercase | Normalise with `tr -d ':' \| tr 'A-F' 'a-f'` |
 

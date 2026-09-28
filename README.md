@@ -1,6 +1,6 @@
-# SDS Android (AdvDisplay)
+# AdvDisplay (Android Client)
 
-An Android digital-signage player. Enter a screen identifier once; SDS remembers the
+An Android digital-signage player. Enter a screen identifier once; AdvDisplay remembers the
 screen and opens its assigned web display, image slideshow, or video playlist.
 This repository is the Android client only. The API is developed separately.
 
@@ -23,7 +23,7 @@ This repository is the Android client only. The API is developed separately.
 - Transactional media updates: all pages and downloads must succeed before replacing the playlist
   and pruning old files. A failed update leaves the last complete playlist available.
 - PIN-protected reconfiguration; external invites cannot replace a configured screen without the PIN.
-- `sds://join?c=CODE` setup links and Android's share sheet (clipboard fallback).
+- `advdisplay://join?c=CODE` setup links and Android's share sheet (clipboard fallback).
 
 This is not a device-owner kiosk app: the PIN protects in-app reconfiguration, not Android Home,
 Settings, uninstall, or physical access. Web display requires a working server connection.
@@ -45,8 +45,8 @@ Debug APK: `app/build/outputs/apk/debug/app-debug.apk`.
 
 | Setting | Default | Override |
 | --- | --- | --- |
-| API base URL | `https://sds.par-crm.com/` | `SDS_BASE_URL` environment variable or `-PSDS_BASE_URL=...` |
-| Admin PIN | `1234` in debug builds | `SDS_ADMIN_PIN` environment variable or `-PSDS_ADMIN_PIN=...` |
+| API base URL | `https://sds.par-crm.com/` | `ADVDISPLAY_BASE_URL` environment variable or `-PADVDISPLAY_BASE_URL=...` |
+| Admin PIN | `1234` in debug builds | `ADVDISPLAY_ADMIN_PIN` environment variable or `-PADVDISPLAY_ADMIN_PIN=...` |
 
 Gradle properties take precedence over environment variables. These values are compiled into
 the APK, so changing them requires rebuilding. Do not commit real PINs or signing keys.
@@ -100,7 +100,7 @@ uploading the lint report, JVM test report, and debug APK as artifacts.
 ./gradlew qualityCheck
 
 # End-to-end tests against an in-process API fixture, on a disposable emulator.
-./gradlew :app:connectedDebugAndroidTest -PSDS_BASE_URL=http://127.0.0.1:18080/
+./gradlew :app:connectedDebugAndroidTest -PADVDISPLAY_BASE_URL=http://127.0.0.1:18080/
 
 # Restore the normal API URL after building the test fixture variant.
 ./gradlew :app:assembleDebug
@@ -117,7 +117,7 @@ Kotlin + Android Views, `ViewModel`/`StateFlow`, coroutines, Retrofit/OkHttp/Gso
 No new backend service or UI framework is required.
 
 ```text
-app/src/main/java/com/DevCiplak/advdisplay/
+app/src/main/java/com/rihlahidali/advdisplay/
   adapter/      Local image/template rendering
   analytics/    Local invite-event counters
   constant/     Configured API URL and endpoint paths

@@ -1,6 +1,6 @@
 # M2 — Real API Integration Runbook
 
-Procedure for validating the SDS Android client against the **real** API (the fixture suite
+Procedure for validating the AdvDisplay Android client against the **real** API (the fixture suite
 only proves the client works against an in-process MockWebServer). Execute phases in order and
 record evidence in the [evidence log](#evidence-log).
 
@@ -29,8 +29,8 @@ returns `Status: false` and cannot validate the happy path.
 
 ```bash
 # Build against the real API with a non-default PIN. Keep the PIN in your shell env, not in git.
-export SDS_BASE_URL="https://sds.par-crm.com/"
-read -s SDS_ADMIN_PIN && export SDS_ADMIN_PIN
+export ADVDISPLAY_BASE_URL="https://sds.par-crm.com/"
+read -s ADVDISPLAY_ADMIN_PIN && export ADVDISPLAY_ADMIN_PIN
 
 ./gradlew :app:assembleDebug
 ./gradlew :app:installDebug
@@ -47,12 +47,12 @@ unzip -p app/build/outputs/apk/debug/app-debug.apk classes.dex | strings | grep 
 ```
 
 > If you previously ran the fixture suite, rebuild **without**
-> `-PSDS_BASE_URL=http://127.0.0.1:18080/`. The fixture URL is loopback-only and release-blocking.
+> `-PADVDISPLAY_BASE_URL=http://127.0.0.1:18080/`. The fixture URL is loopback-only and release-blocking.
 
 Capture the app's own device ID (needed to replay calls with curl):
 
 ```bash
-adb shell run-as com.DevCiplak.advdisplay cat shared_prefs/advForward.xml
+adb shell run-as com.rihlahidali.advdisplay cat shared_prefs/advForward.xml
 # Read installationDeviceId / deviceId → use as <UID> below
 ```
 
@@ -277,11 +277,11 @@ adb logcat -c && adb logcat | grep -iE 'advdisplay|okhttp|webview|media'
 
 # Cached media + manifest. Primary location is the app-specific EXTERNAL files dir
 # (PlaylistCache uses getExternalFilesDir(null)/<CODE>, falling back to internal filesDir).
-adb shell ls -l /sdcard/Android/data/com.DevCiplak.advdisplay/files/<CODE>/
-adb shell cat /sdcard/Android/data/com.DevCiplak.advdisplay/files/<CODE>/playlist.json | jq .
+adb shell ls -l /sdcard/Android/data/com.rihlahidali.advdisplay/files/<CODE>/
+adb shell cat /sdcard/Android/data/com.rihlahidali.advdisplay/files/<CODE>/playlist.json | jq .
 
 # Internal-storage fallback (debug builds only)
-adb shell run-as com.DevCiplak.advdisplay ls -l files/<CODE>/
+adb shell run-as com.rihlahidali.advdisplay ls -l files/<CODE>/
 ```
 
 ## 8. Exit criteria

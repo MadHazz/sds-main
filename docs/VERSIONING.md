@@ -1,6 +1,6 @@
 # Versioning & Upgrade Policy
 
-Defines how SDS versions are numbered and what must stay stable for an
+Defines how AdvDisplay versions are numbered and what must stay stable for an
 in-place upgrade to preserve a screen's identity and cached media.
 
 - **Current release:** `versionName` `1.0.0` · `versionCode` `10000`
@@ -39,7 +39,7 @@ a `MAJOR` bump and must be called out in the release notes.
 
 1. **Never decrease `versionCode`.** Android rejects an install whose `versionCode` is
    lower than the installed one (a downgrade). A higher or **equal** code installs fine.
-2. **Never reuse an `applicationId` for different content.** `com.DevCiplak.advdisplay`
+2. **Never reuse an `applicationId` for different content.** `com.rihlahidali.advdisplay`
    is the app identity; changing it produces a separate app and loses all data.
 3. **Every distributed build gets a version.** Increment at least `PATCH` for each build
    handed to an operator, so the installed version is always identifiable.
@@ -76,6 +76,33 @@ Both the old Java client and the Kotlin client used the same preferences file
 (`advForward`) and the same media directory (`getExternalFilesDir(null)/<CODE>`), and the
 cache falls back to scanning for complete `*.mp4` files when no manifest is present. So a
 correctly signed upgrade keeps the screen configured and its media playable.
+
+### Renamed from SDS to AdvDisplay
+
+The app was renamed from **SDS** to **AdvDisplay**, which changed the `applicationId`:
+
+| | Before | After |
+| --- | --- | --- |
+| `applicationId` / package | `com.DevCiplak.advdisplay` | `com.rihlahidali.advdisplay` |
+| Invite deep link | `sds://join?c=CODE` | `advdisplay://join?c=CODE` |
+| Build inputs | `SDS_BASE_URL`, `SDS_ADMIN_PIN` | `ADVDISPLAY_BASE_URL`, `ADVDISPLAY_ADMIN_PIN` |
+
+**Consequence:** Android treats the two identifiers as **different apps**. An AdvDisplay APK
+will **not** upgrade an existing `com.DevCiplak.advdisplay` installation — it installs
+alongside it as a separate app. The preservation table above therefore applies only to
+AdvDisplay → AdvDisplay upgrades.
+
+For any device already running the pre-rename build:
+
+1. Uninstall the old app, or leave it installed and ignore it (the two coexist).
+2. Install AdvDisplay and **re-identify every screen** — screen code, device ID, and cached
+   media do not carry across the rename.
+3. The legacy `*.mp4` restore path cannot bridge the rename: it scans the *new* app's own
+   external-files directory, which is empty on a fresh install. It still helps when
+   upgrading within the same identifier (for example, the old Java build → the Kotlin build
+   of `com.DevCiplak.advdisplay`).
+
+If AdvDisplay has never been deployed to a device, none of this applies and the rename is free.
 
 ### The signing key is the linchpin
 

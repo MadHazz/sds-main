@@ -1,56 +1,107 @@
 plugins {
     id 'com.android.application'
+    id 'kotlin-android'
 }
 
+def configuredPin = (project.findProperty("SDS_ADMIN_PIN") ?: System.getenv("SDS_ADMIN_PIN") ?: "").toString()
+def adminPinRaw = configuredPin ?: "1234"
+def adminPinEscaped = adminPinRaw.replace("\\", "\\\\").replace("\"", "\\\"")
+def apiBaseUrl = (project.findProperty("SDS_BASE_URL") ?: System.getenv("SDS_BASE_URL") ?: "https://sds.par-crm.com/").toString()
+def parsedBaseUrl = new URI(apiBaseUrl)
+if (!(parsedBaseUrl.scheme in ['https', 'http']) || !parsedBaseUrl.host || parsedBaseUrl.userInfo || parsedBaseUrl.query || parsedBaseUrl.fragment) {
+    throw new GradleException('SDS_BASE_URL must be an HTTP(S) base URL without credentials, query or fragment.')
+}
+if (!apiBaseUrl.endsWith('/')) apiBaseUrl += '/'
+
 android {
-    compileSdk 33
+    compileSdk = 33
 
     defaultConfig {
-        applicationId "com.DevCiplak.advdisplay"
-        minSdkVersion 22
-        targetSdkVersion 33
-        versionCode 1
-        versionName "1.0"
+        applicationId = "com.DevCiplak.advdisplay"
+        minSdk = 22
+        targetSdk = 33
+        versionCode = 1
+        versionName = "1.0"
 
-        multiDexEnabled true
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled = true
+        // Configure with -PSDS_ADMIN_PIN=... or SDS_ADMIN_PIN env var.
+        buildConfigField "String", "ADMIN_PIN", "\"${adminPinEscaped}\""
+        buildConfigField "String", "API_BASE_URL", "\"${apiBaseUrl}\""
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
-    namespace 'com.DevCiplak.advdisplay'
+    kotlinOptions {
+        jvmTarget = '17'
+        allWarningsAsErrors = true
+    }
+    testOptions {
+        animationsDisabled = true
+    }
+    lint {
+        abortOnError = true
+        htmlReport = true
+        xmlReport = true
+        lintConfig = file('lint.xml')
+    }
+    namespace = 'com.DevCiplak.advdisplay'
 }
 
 dependencies {
-
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.6.0'
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.9.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
-    testImplementation 'junit:junit:4.+'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.4'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.0'
-    implementation 'io.github.ParkSangGwon:tedpermission-normal:3.3.0'
-    implementation 'com.google.android.gms:play-services-location:21.0.1'
-    implementation 'com.github.smarteist:autoimageslider:1.4.0'
-    implementation 'com.github.bumptech.glide:glide:4.13.2'
-    implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    implementation 'com.squareup.okhttp3:okhttp:4.2.1'
-    implementation 'com.squareup.okhttp3:logging-interceptor:4.2.1'
-    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    implementation 'com.jakewharton.retrofit:retrofit1-okhttp3-client:1.0.2'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.13.2'
-    implementation 'com.android.support:multidex:1.0.3'
-    implementation 'com.github.denzcoskun:ImageSlideshow:0.1.0'
-    implementation "androidx.work:work-runtime:2.7.1"
-    implementation 'com.android.support:multidex:1.0.3'
+
+    // Architecture Components
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
+
+    // Coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.1'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.10.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.10.0'
+
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.15.1'
+
+    // Retrofit & OkHttp
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
+
 }
+
+tasks.register('validateReleaseConfiguration') {
+    doLast {
+        if (!(configuredPin ==~ /[0-9]{4,12}/) || configuredPin == '1234') {
+            throw new GradleException('Release builds require SDS_ADMIN_PIN with 4-12 digits, different from 1234.')
+        }
+        if (parsedBaseUrl.scheme != 'https') {
+            throw new GradleException('Release builds require an HTTPS SDS_BASE_URL.')
+        }
+    }
+}
+tasks.matching { it.name == 'preReleaseBuild' }.configureEach { dependsOn('validateReleaseConfiguration') }

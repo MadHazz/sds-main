@@ -81,7 +81,7 @@ Notes:
   - [x] Upload lint report, JVM test report, and debug APK as artifacts
   - [x] Gradle dependency caching via `gradle/actions/setup-gradle`
   - [x] Confirm the workflow is green on GitHub — run
-        [36400390759](https://github.com/MadHazz/sds-main/actions/runs/36400390759) passed all steps
+        [36400390759](https://github.com/MadHazz/advdisplay-android/actions/runs/36400390759) passed all steps
         and uploaded `app-debug` (6.0 MB), `jvm-test-report`, and `lint-results-debug` artifacts
 - [ ] **Release signing:**
   - [ ] Generate/obtain the deployment keystore (never commit it)
@@ -110,7 +110,7 @@ Notes:
       `Bypassed rule violations ... Required status check is expected` on each one. Requiring
       PRs (or setting `enforce_admins`) would block direct pushes entirely; switch to a
       branch-and-PR flow before tightening. Verified green afterwards: run
-      [36400938038](https://github.com/MadHazz/sds-main/actions/runs/36400938038).
+      [36400938038](https://github.com/MadHazz/advdisplay-android/actions/runs/36400938038).
 
 Verification performed locally on 2026-09-28: `qualityCheck` and `:app:assembleDebug` pass;
 `assembleRelease` without `keystore.properties` emits `app-release-unsigned.apk`; with a
@@ -251,3 +251,4 @@ APK `app/build/outputs/apk/debug/app-debug.apk`.
 | 2026-09-28 | **Version guard added.** `:app:validateVersioning` fails when `versionCode` does not equal `MAJOR*10000 + MINOR*100 + PATCH` for `versionName`, or when the name is malformed or MINOR/PATCH exceed 99. Wired into `qualityCheck`, so CI now catches version drift. Verified both the passing and failing cases. |
 | 2026-09-28 | **Signing walkthrough added** (`docs/SIGNING.md`): installed-build certificate discovery, keystore generation, `keystore.properties`, signed build, signature verification with a digest-comparison snippet, backup and CI guidance, and troubleshooting. Every command was executed against this repo before publication. |
 | 2026-09-28 | **Renamed SDS → AdvDisplay.** Product name, app label (`app_name`), UI/clipboard strings, docs, and the invite scheme (`sds://` → `advdisplay://`) updated. Build inputs renamed to `ADVDISPLAY_BASE_URL` / `ADVDISPLAY_ADMIN_PIN`. Package and `applicationId` changed from `com.DevCiplak.advdisplay` to `com.rihlahidali.advdisplay` (vendor `DevCiplak` → `rihlahidali`), moving all 38 sources and updating imports/tests. Verified in the built APK: `package=com.rihlahidali.advdisplay`, `application-label=AdvDisplay`, scheme `advdisplay://join`. **The API host (`sds.par-crm.com`) and repo name are unchanged pending a new host URL.** |
+| 2026-09-28 | **Repo renamed** `MadHazz/sds-main` → `MadHazz/advdisplay-android` (via the API, since `gh repo rename` hung). Local `origin` updated; the old URL redirects. Branch protection and required checks confirmed intact afterwards, and the Actions run links in this document were updated. The API host is still `sds.par-crm.com`, pending a new URL. |
